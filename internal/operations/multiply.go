@@ -3,6 +3,11 @@ package operations
 // MultiplyOperation implements the Operation interface for multiplication
 type MultiplyOperation struct{}
 
+// init registers the MultiplyOperation with the DefaultRegistry
+func init() {
+	RegisterDefault(&MultiplyOperation{})
+}
+
 // Execute multiplies two numbers together
 // Returns an error if either input is NaN or infinite
 func (m *MultiplyOperation) Execute(x, y float64) (float64, error) {

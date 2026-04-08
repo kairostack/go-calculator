@@ -3,6 +3,11 @@ package operations
 // AddOperation implements the Operation interface for addition
 type AddOperation struct{}
 
+// init registers the AddOperation with the DefaultRegistry
+func init() {
+	RegisterDefault(&AddOperation{})
+}
+
 // Execute adds two numbers together
 // Returns an error if either input is NaN or infinite
 func (a *AddOperation) Execute(x, y float64) (float64, error) {

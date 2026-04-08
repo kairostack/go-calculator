@@ -3,6 +3,11 @@ package operations
 // SubtractOperation implements the Operation interface for subtraction
 type SubtractOperation struct{}
 
+// init registers the SubtractOperation with the DefaultRegistry
+func init() {
+	RegisterDefault(&SubtractOperation{})
+}
+
 // Execute subtracts the second number from the first
 // Returns an error if either input is NaN or infinite
 func (s *SubtractOperation) Execute(x, y float64) (float64, error) {

@@ -9,6 +9,11 @@ import (
 // DivideOperation implements the Operation interface for division
 type DivideOperation struct{}
 
+// init registers the DivideOperation with the DefaultRegistry
+func init() {
+	RegisterDefault(&DivideOperation{})
+}
+
 // Execute divides the first number by the second
 // Returns ErrDivisionByZero if the divisor is zero, NaN, or infinite
 // Also validates that inputs are finite numbers

@@ -1,10 +1,29 @@
 package operations
 
 import (
+	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/kairostack/go-calculator/internal/errors"
 )
+
+var (
+	// DefaultRegistry is the global default registry that is pre-populated
+	// via init() functions in each operation file
+	DefaultRegistry = NewRegistry()
+	registerOnce    sync.Once
+)
+
+// RegisterDefault registers an operation to the DefaultRegistry.
+// This is called from init() functions in each operation file.
+// Thread-safe and idempotent.
+func RegisterDefault(op Operation) {
+	registerOnce.Do(func() {
+		DefaultRegistry = NewRegistry()
+	})
+	DefaultRegistry.Register(op)
+}
 
 // Registry maintains a thread-safe collection of operations
 // Uses the Registry pattern for dynamic operation lookup
@@ -41,11 +60,11 @@ func (r *Registry) Get(name string) (Operation, error) {
 	return nil, &errors.CalculatorError{
 		Op:      name,
 		Err:     "operation not found",
-		Details: "available operations: add, subtract, multiply, divide",
+		Details: fmt.Sprintf("available operations: %v", r.List()),
 	}
 }
 
-// List returns all registered operation names
+// List returns all registered operation names, sorted alphabetically
 func (r *Registry) List() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -54,6 +73,7 @@ func (r *Registry) List() []string {
 	for name := range r.operations {
 		names = append(names, name)
 	}
+	sort.Strings(names)
 	return names
 }
 
