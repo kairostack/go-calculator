@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kairostack/go-calculator/internal/operations"
+	"github.com/kairostack/go-calculator/pkg/floatutil"
 )
 
 func TestNew(t *testing.T) {
@@ -58,8 +59,8 @@ func TestCalculator_Calculate(t *testing.T) {
 				t.Fatalf("Calculate() unexpected error: %v", err)
 			}
 
-			if result != tt.expected {
-				t.Errorf("Calculate() = %g, want %g", result, tt.expected)
+			if !floatutil.Equals(result, tt.expected) {
+				t.Errorf("Calculate() = %g, want %g (diff: %g)", result, tt.expected, result-tt.expected)
 			}
 		})
 	}
@@ -161,8 +162,8 @@ func TestCalculator_ExecuteOperation(t *testing.T) {
 		t.Fatalf("ExecuteOperation() unexpected error: %v", err)
 	}
 
-	if result != 8 {
-		t.Errorf("ExecuteOperation() result = %g, want 8", result)
+	if !floatutil.Equals(result, 8) {
+		t.Errorf("ExecuteOperation() result = %g, want 8 (diff: %g)", result, result-8)
 	}
 
 	if symbol != "+" {

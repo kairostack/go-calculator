@@ -44,6 +44,24 @@ var (
 		Op:  "input",
 		Err: "invalid number format",
 	}
+
+	// ErrInvalidInput is returned when input validation fails
+	ErrInvalidInput = &CalculatorError{
+		Op:  "input",
+		Err: "invalid input",
+	}
+
+	// ErrInputNaN is returned when an input is NaN
+	ErrInputNaN = &CalculatorError{
+		Op:  "input",
+		Err: "input is NaN",
+	}
+
+	// ErrInputInf is returned when an input is infinite
+	ErrInputInf = &CalculatorError{
+		Op:  "input",
+		Err: "input is infinite",
+	}
 )
 
 // NewCalculatorError creates a new CalculatorError with operation context

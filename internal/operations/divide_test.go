@@ -2,9 +2,11 @@ package operations
 
 import (
 	"errors"
+	"math"
 	"testing"
 
 	calcErrors "github.com/kairostack/go-calculator/internal/errors"
+	"github.com/kairostack/go-calculator/pkg/floatutil"
 )
 
 func TestDivideOperation_Execute(t *testing.T) {
@@ -44,8 +46,39 @@ func TestDivideOperation_Execute(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if result != tt.expected {
-				t.Errorf("Execute(%g, %g) = %g, want %g", tt.a, tt.b, result, tt.expected)
+			if !floatutil.Equals(result, tt.expected) {
+				t.Errorf("Execute(%g, %g) = %g, want %g (diff: %g)",
+					tt.a, tt.b, result, tt.expected, result-tt.expected)
+			}
+		})
+	}
+}
+
+func TestDivideOperation_Execute_EdgeCases(t *testing.T) {
+	div := &DivideOperation{}
+
+	tests := []struct {
+		name        string
+		a, b        float64
+		expectedErr error
+	}{
+		{"NaN first input", math.NaN(), 5, calcErrors.ErrInputNaN},
+		{"NaN second input", 5, math.NaN(), calcErrors.ErrInputNaN},
+		{"NaN divisor (zero check)", 5, math.NaN(), calcErrors.ErrInputNaN},
+		{"positive Inf first", math.Inf(1), 5, calcErrors.ErrInputInf},
+		{"positive Inf second", 5, math.Inf(1), calcErrors.ErrInputInf},
+		{"negative Inf first", math.Inf(-1), 5, calcErrors.ErrInputInf},
+		{"negative Inf second", 5, math.Inf(-1), calcErrors.ErrInputInf},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := div.Execute(tt.a, tt.b)
+			if err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			if !errors.Is(err, tt.expectedErr) {
+				t.Errorf("expected error %v, got %v", tt.expectedErr, err)
 			}
 		})
 	}

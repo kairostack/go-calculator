@@ -4,7 +4,11 @@ package operations
 type AddOperation struct{}
 
 // Execute adds two numbers together
+// Returns an error if either input is NaN or infinite
 func (a *AddOperation) Execute(x, y float64) (float64, error) {
+	if err := validateInputs(x, y); err != nil {
+		return 0, err
+	}
 	return x + y, nil
 }
 

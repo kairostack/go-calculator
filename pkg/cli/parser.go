@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -52,6 +53,14 @@ func (p *Parser) Parse(args []string) (*ParseResult, error) {
 		}
 	}
 
+	if !isValidNumber(a) {
+		return nil, &errors.CalculatorError{
+			Op:      "parse",
+			Err:     "invalid first operand",
+			Details: fmt.Sprintf("'%s' is not a valid finite number", args[1]),
+		}
+	}
+
 	b, err := strconv.ParseFloat(strings.TrimSpace(args[2]), 64)
 	if err != nil {
 		return nil, &errors.CalculatorError{
@@ -61,11 +70,25 @@ func (p *Parser) Parse(args []string) (*ParseResult, error) {
 		}
 	}
 
+	if !isValidNumber(b) {
+		return nil, &errors.CalculatorError{
+			Op:      "parse",
+			Err:     "invalid second operand",
+			Details: fmt.Sprintf("'%s' is not a valid finite number", args[2]),
+		}
+	}
+
 	return &ParseResult{
 		Operation: operation,
 		OperandA:  a,
 		OperandB:  b,
 	}, nil
+}
+
+// isValidNumber checks if the parsed float is a finite number (not NaN or +/- Inf).
+// This prevents silent failures from special floating-point values.
+func isValidNumber(n float64) bool {
+	return !math.IsNaN(n) && !math.IsInf(n, 0)
 }
 
 // ParseResultString returns a formatted string representation of the parse result
