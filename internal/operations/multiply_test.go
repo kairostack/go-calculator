@@ -67,6 +67,37 @@ func TestMultiplyOperation_Execute_InvalidInputs(t *testing.T) {
 	}
 }
 
+func TestMultiplyOperation_Execute_Overflow(t *testing.T) {
+	mul := &MultiplyOperation{}
+
+	tests := []struct {
+		name    string
+		a, b    float64
+		wantErr bool
+	}{
+		{"MaxFloat64 * 2", math.MaxFloat64, 2, true},
+		{"MaxFloat64 * MaxFloat64", math.MaxFloat64, math.MaxFloat64, true},
+		{"large * large", 1e200, 1e200, true},
+		{"large valid", math.MaxFloat64 / 2, 1.5, false},
+		{"small * small", 1e-200, 1e-200, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := mul.Execute(tt.a, tt.b)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("expected overflow error, got result %g", result)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestMultiplyOperation_Name(t *testing.T) {
 	mul := &MultiplyOperation{}
 	if got := mul.Name(); got != "multiply" {

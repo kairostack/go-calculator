@@ -1,9 +1,10 @@
 package operations
 
 import (
+	"errors"
 	"math"
 
-	"github.com/kairostack/go-calculator/internal/errors"
+	calcErrors "github.com/kairostack/go-calculator/internal/errors"
 )
 
 // DivideOperation implements the Operation interface for division
@@ -16,7 +17,7 @@ func init() {
 
 // Execute divides the first number by the second
 // Returns ErrDivisionByZero if the divisor is zero, NaN, or infinite
-// Also validates that inputs are finite numbers
+// Also validates that inputs are finite numbers and checks for underflow/overflow
 func (d *DivideOperation) Execute(x, y float64) (float64, error) {
 	// Validate inputs first
 	if err := validateInputs(x, y); err != nil {
@@ -25,10 +26,19 @@ func (d *DivideOperation) Execute(x, y float64) (float64, error) {
 
 	// Check for division by zero or invalid divisor values
 	if y == 0 || math.IsNaN(y) || math.IsInf(y, 0) {
-		return 0, errors.ErrDivisionByZero
+		return 0, calcErrors.ErrDivisionByZero
 	}
 
-	return x / y, nil
+	result := x / y
+	// Check for underflow: when a non-zero number divided by a large number produces zero
+	if x != 0 && result == 0 && math.Abs(y) > 1 {
+		return 0, errors.New("division underflow - result too small")
+	}
+	if math.IsInf(result, 0) {
+		return 0, errors.New("division overflow - result too large")
+	}
+
+	return result, nil
 }
 
 // Name returns the operation identifier

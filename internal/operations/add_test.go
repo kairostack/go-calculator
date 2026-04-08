@@ -69,6 +69,37 @@ func TestAddOperation_Execute_InvalidInputs(t *testing.T) {
 	}
 }
 
+func TestAddOperation_Execute_Overflow(t *testing.T) {
+	add := &AddOperation{}
+
+	tests := []struct {
+		name    string
+		a, b    float64
+		wantErr bool
+	}{
+		{"MaxFloat64 + MaxFloat64", math.MaxFloat64, math.MaxFloat64, true},
+		{"MaxFloat64 + large", math.MaxFloat64, math.MaxFloat64 / 2, true},
+		{"negative overflow", -math.MaxFloat64, -math.MaxFloat64, true},
+		{"valid large", math.MaxFloat64 / 2, math.MaxFloat64 / 4, false},
+		{"valid addition", 1e200, 1e200, false}, // 2e200 is still finite
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := add.Execute(tt.a, tt.b)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("expected overflow error, got result %g", result)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestAddOperation_Name(t *testing.T) {
 	add := &AddOperation{}
 	if got := add.Name(); got != "add" {

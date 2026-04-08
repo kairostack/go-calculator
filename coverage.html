@@ -1,0 +1,1006 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>calculator: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/kairostack/go-calculator/cmd/calculator/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/kairostack/go-calculator/internal/calculator/calculator.go (91.4%)</option>
+				
+				<option value="file2">github.com/kairostack/go-calculator/internal/errors/errors.go (0.0%)</option>
+				
+				<option value="file3">github.com/kairostack/go-calculator/internal/operations/add.go (100.0%)</option>
+				
+				<option value="file4">github.com/kairostack/go-calculator/internal/operations/divide.go (100.0%)</option>
+				
+				<option value="file5">github.com/kairostack/go-calculator/internal/operations/multiply.go (91.7%)</option>
+				
+				<option value="file6">github.com/kairostack/go-calculator/internal/operations/registry.go (100.0%)</option>
+				
+				<option value="file7">github.com/kairostack/go-calculator/internal/operations/subtract.go (100.0%)</option>
+				
+				<option value="file8">github.com/kairostack/go-calculator/internal/operations/validation.go (100.0%)</option>
+				
+				<option value="file9">github.com/kairostack/go-calculator/pkg/cli/formatter.go (100.0%)</option>
+				
+				<option value="file10">github.com/kairostack/go-calculator/pkg/cli/parser.go (89.5%)</option>
+				
+				<option value="file11">github.com/kairostack/go-calculator/pkg/cli/runner.go (0.0%)</option>
+				
+				<option value="file12">github.com/kairostack/go-calculator/pkg/floatutil/compare.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "os"
+
+        "github.com/kairostack/go-calculator/internal/calculator"
+        "github.com/kairostack/go-calculator/pkg/cli"
+)
+
+func main() <span class="cov0" title="0">{
+        calc := calculator.New()
+        runner := cli.NewRunner(calc, os.Stdin, os.Stdout, os.Stderr)
+        os.Exit(runner.Run(os.Args))
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package calculator
+
+import (
+        "io"
+        "log"
+
+        "github.com/kairostack/go-calculator/internal/operations"
+)
+
+// Calculator orchestrates calculation operations
+// Uses the Strategy pattern via the operations registry
+type Calculator struct {
+        registry *operations.Registry
+        logger   *log.Logger
+}
+
+// New creates a new Calculator with all operations pre-registered
+// Uses the DefaultRegistry which is populated via init() functions
+func New() *Calculator <span class="cov8" title="1">{
+        return &amp;Calculator{
+                registry: operations.DefaultRegistry,
+                logger:   log.New(io.Discard, "[calculator] ", log.LstdFlags), // No-op by default
+        }
+}</span>
+
+// NewWithRegistry creates a Calculator with a custom registry
+// Useful for testing with mock operations
+func NewWithRegistry(registry *operations.Registry) *Calculator <span class="cov8" title="1">{
+        return &amp;Calculator{
+                registry: registry,
+                logger:   log.New(io.Discard, "[calculator] ", log.LstdFlags), // No-op by default
+        }
+}</span>
+
+// NewWithLogger creates a Calculator with a custom logger
+func NewWithLogger(logger *log.Logger) *Calculator <span class="cov0" title="0">{
+        calc := New()
+        calc.logger = logger
+        return calc
+}</span>
+
+// Calculate performs the specified operation on two operands
+// Returns the result or an error if the operation fails
+func (c *Calculator) Calculate(operationName string, a, b float64) (float64, error) <span class="cov8" title="1">{
+        c.logger.Printf("Executing operation: %s(%f, %f)", operationName, a, b)
+
+        op, err := c.registry.Get(operationName)
+        if err != nil </span><span class="cov8" title="1">{
+                c.logger.Printf("Operation not found: %s", operationName)
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">result, err := op.Execute(a, b)
+        if err != nil </span><span class="cov8" title="1">{
+                c.logger.Printf("Operation %s failed: %v", operationName, err)
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">c.logger.Printf("Operation %s result: %f", operationName, result)
+        return result, nil</span>
+}
+
+// GetOperation retrieves an operation by name
+func (c *Calculator) GetOperation(name string) (operations.Operation, error) <span class="cov8" title="1">{
+        return c.registry.Get(name)
+}</span>
+
+// ListOperations returns all available operation names
+func (c *Calculator) ListOperations() []string <span class="cov8" title="1">{
+        return c.registry.List()
+}</span>
+
+// GetOperationDetails returns details about a specific operation
+func (c *Calculator) GetOperationDetails(name string) (map[string]string, error) <span class="cov8" title="1">{
+        op, err := c.registry.Get(name)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return map[string]string{
+                "name":        op.Name(),
+                "symbol":      op.Symbol(),
+                "description": op.Description(),
+        }, nil</span>
+}
+
+// ExecuteOperation is a convenience method that parses and executes in one call
+// Returns both the result and the operation symbol for formatting
+func (c *Calculator) ExecuteOperation(operationName string, a, b float64) (float64, string, error) <span class="cov8" title="1">{
+        c.logger.Printf("Executing operation: %s(%f, %f)", operationName, a, b)
+
+        op, err := c.registry.Get(operationName)
+        if err != nil </span><span class="cov8" title="1">{
+                c.logger.Printf("Operation not found: %s", operationName)
+                return 0, "", err
+        }</span>
+
+        <span class="cov8" title="1">result, err := op.Execute(a, b)
+        if err != nil </span><span class="cov8" title="1">{
+                c.logger.Printf("Operation %s failed: %v", operationName, err)
+                return 0, op.Symbol(), err
+        }</span>
+
+        <span class="cov8" title="1">c.logger.Printf("Operation %s result: %f", operationName, result)
+        return result, op.Symbol(), nil</span>
+}
+
+// ValidateOperation checks if an operation exists without executing it
+func (c *Calculator) ValidateOperation(name string) bool <span class="cov8" title="1">{
+        _, err := c.registry.Get(name)
+        return err == nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package errors
+
+import (
+        "fmt"
+)
+
+// CalculatorError represents a custom error for calculator operations
+type CalculatorError struct {
+        Op      string
+        Err     string
+        Details string
+}
+
+// Error implements the error interface
+func (e *CalculatorError) Error() string <span class="cov0" title="0">{
+        if e.Details != "" </span><span class="cov0" title="0">{
+                return fmt.Sprintf("calculator error [%s]: %s (%s)", e.Op, e.Err, e.Details)
+        }</span>
+        <span class="cov0" title="0">return fmt.Sprintf("calculator error [%s]: %s", e.Op, e.Err)</span>
+}
+
+// Common calculator errors
+var (
+        // ErrDivisionByZero is returned when attempting to divide by zero
+        ErrDivisionByZero = &amp;CalculatorError{
+                Op:  "divide",
+                Err: "division by zero",
+        }
+
+        // ErrInvalidOperation is returned when an operation name is not recognized
+        ErrInvalidOperation = &amp;CalculatorError{
+                Op:  "unknown",
+                Err: "invalid operation",
+        }
+
+        // ErrInsufficientArguments is returned when not enough arguments are provided
+        ErrInsufficientArguments = &amp;CalculatorError{
+                Op:  "input",
+                Err: "insufficient arguments",
+        }
+
+        // ErrInvalidNumber is returned when a number cannot be parsed
+        ErrInvalidNumber = &amp;CalculatorError{
+                Op:  "input",
+                Err: "invalid number format",
+        }
+
+        // ErrInvalidInput is returned when input validation fails
+        ErrInvalidInput = &amp;CalculatorError{
+                Op:  "input",
+                Err: "invalid input",
+        }
+
+        // ErrInputNaN is returned when an input is NaN
+        ErrInputNaN = &amp;CalculatorError{
+                Op:  "input",
+                Err: "input is NaN",
+        }
+
+        // ErrInputInf is returned when an input is infinite
+        ErrInputInf = &amp;CalculatorError{
+                Op:  "input",
+                Err: "input is infinite",
+        }
+)
+
+// NewCalculatorError creates a new CalculatorError with operation context
+func NewCalculatorError(op, err string) *CalculatorError <span class="cov0" title="0">{
+        return &amp;CalculatorError{
+                Op:  op,
+                Err: err,
+        }
+}</span>
+
+// Wrap wraps an existing error with calculator context
+func Wrap(op string, err error) *CalculatorError <span class="cov0" title="0">{
+        return &amp;CalculatorError{
+                Op:      op,
+                Err:     err.Error(),
+                Details: "wrapped error",
+        }
+}</span>
+
+// OperationError provides detailed context for operation failures
+type OperationError struct {
+        Op   string
+        A, B float64
+        Err  error
+}
+
+// Error implements the error interface with context
+func (e *OperationError) Error() string <span class="cov0" title="0">{
+        return fmt.Sprintf("operation %s(%g, %g) failed: %v", e.Op, e.A, e.B, e.Err)
+}</span>
+
+// Unwrap allows error inspection with errors.Is and errors.As
+func (e *OperationError) Unwrap() error <span class="cov0" title="0">{
+        return e.Err
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package operations
+
+import (
+        "errors"
+        "math"
+)
+
+// AddOperation implements the Operation interface for addition
+type AddOperation struct{}
+
+// init registers the AddOperation with the DefaultRegistry
+func init() <span class="cov8" title="1">{
+        RegisterDefault(&amp;AddOperation{})
+}</span>
+
+// Execute adds two numbers together
+// Returns an error if either input is NaN or infinite, or if overflow occurs
+func (a *AddOperation) Execute(x, y float64) (float64, error) <span class="cov8" title="1">{
+        if err := validateInputs(x, y); err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">result := x + y
+        if math.IsInf(result, 0) </span><span class="cov8" title="1">{
+                return 0, errors.New("addition resulted in infinity")
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// Name returns the operation identifier
+func (a *AddOperation) Name() string <span class="cov8" title="1">{
+        return "add"
+}</span>
+
+// Description returns a human-readable description
+func (a *AddOperation) Description() string <span class="cov8" title="1">{
+        return "Adds two numbers together"
+}</span>
+
+// Symbol returns the mathematical symbol
+func (a *AddOperation) Symbol() string <span class="cov8" title="1">{
+        return "+"
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package operations
+
+import (
+        "errors"
+        "math"
+
+        calcErrors "github.com/kairostack/go-calculator/internal/errors"
+)
+
+// DivideOperation implements the Operation interface for division
+type DivideOperation struct{}
+
+// init registers the DivideOperation with the DefaultRegistry
+func init() <span class="cov8" title="1">{
+        RegisterDefault(&amp;DivideOperation{})
+}</span>
+
+// Execute divides the first number by the second
+// Returns ErrDivisionByZero if the divisor is zero, NaN, or infinite
+// Also validates that inputs are finite numbers and checks for underflow/overflow
+func (d *DivideOperation) Execute(x, y float64) (float64, error) <span class="cov8" title="1">{
+        // Validate inputs first
+        if err := validateInputs(x, y); err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+
+        // Check for division by zero or invalid divisor values
+        <span class="cov8" title="1">if y == 0 || math.IsNaN(y) || math.IsInf(y, 0) </span><span class="cov8" title="1">{
+                return 0, calcErrors.ErrDivisionByZero
+        }</span>
+
+        <span class="cov8" title="1">result := x / y
+        // Check for underflow: when a non-zero number divided by a large number produces zero
+        if x != 0 &amp;&amp; result == 0 &amp;&amp; math.Abs(y) &gt; 1 </span><span class="cov8" title="1">{
+                return 0, errors.New("division underflow - result too small")
+        }</span>
+        <span class="cov8" title="1">if math.IsInf(result, 0) </span><span class="cov8" title="1">{
+                return 0, errors.New("division overflow - result too large")
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// Name returns the operation identifier
+func (d *DivideOperation) Name() string <span class="cov8" title="1">{
+        return "divide"
+}</span>
+
+// Description returns a human-readable description
+func (d *DivideOperation) Description() string <span class="cov8" title="1">{
+        return "Divides the first number by the second"
+}</span>
+
+// Symbol returns the mathematical symbol
+func (d *DivideOperation) Symbol() string <span class="cov8" title="1">{
+        return "/"
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package operations
+
+import (
+        "errors"
+        "math"
+)
+
+// MultiplyOperation implements the Operation interface for multiplication
+type MultiplyOperation struct{}
+
+// init registers the MultiplyOperation with the DefaultRegistry
+func init() <span class="cov8" title="1">{
+        RegisterDefault(&amp;MultiplyOperation{})
+}</span>
+
+// Execute multiplies two numbers together
+// Returns an error if either input is NaN or infinite, or if overflow occurs
+func (m *MultiplyOperation) Execute(x, y float64) (float64, error) <span class="cov8" title="1">{
+        if err := validateInputs(x, y); err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+
+        // Check for potential overflow
+        <span class="cov8" title="1">if math.Abs(x) &gt; 1 &amp;&amp; math.Abs(y) &gt; math.MaxFloat64/math.Abs(x) </span><span class="cov8" title="1">{
+                return 0, errors.New("multiplication would overflow")
+        }</span>
+
+        <span class="cov8" title="1">result := x * y
+        if math.IsInf(result, 0) </span><span class="cov0" title="0">{
+                return 0, errors.New("multiplication resulted in infinity")
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// Name returns the operation identifier
+func (m *MultiplyOperation) Name() string <span class="cov8" title="1">{
+        return "multiply"
+}</span>
+
+// Description returns a human-readable description
+func (m *MultiplyOperation) Description() string <span class="cov8" title="1">{
+        return "Multiplies two numbers together"
+}</span>
+
+// Symbol returns the mathematical symbol
+func (m *MultiplyOperation) Symbol() string <span class="cov8" title="1">{
+        return "*"
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package operations
+
+import (
+        "fmt"
+        "sort"
+        "sync"
+
+        "github.com/kairostack/go-calculator/internal/errors"
+)
+
+var (
+        // DefaultRegistry is the global default registry that is pre-populated
+        // via init() functions in each operation file
+        DefaultRegistry = NewRegistry()
+        registerOnce    sync.Once
+)
+
+// RegisterDefault registers an operation to the DefaultRegistry.
+// This is called from init() functions in each operation file.
+// Thread-safe and idempotent.
+func RegisterDefault(op Operation) <span class="cov8" title="1">{
+        registerOnce.Do(func() </span><span class="cov8" title="1">{
+                DefaultRegistry = NewRegistry()
+        }</span>)
+        <span class="cov8" title="1">DefaultRegistry.Register(op)</span>
+}
+
+// Registry maintains a thread-safe collection of operations
+// Uses the Registry pattern for dynamic operation lookup
+type Registry struct {
+        mu         sync.RWMutex
+        operations map[string]Operation
+}
+
+// NewRegistry creates a new operation registry
+func NewRegistry() *Registry <span class="cov8" title="1">{
+        return &amp;Registry{
+                operations: make(map[string]Operation),
+        }
+}</span>
+
+// Register adds an operation to the registry
+// Thread-safe for concurrent access
+func (r *Registry) Register(op Operation) <span class="cov8" title="1">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+        r.operations[op.Name()] = op
+}</span>
+
+// Get retrieves an operation by name
+// Returns ErrInvalidOperation if the operation is not found
+func (r *Registry) Get(name string) (Operation, error) <span class="cov8" title="1">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        if op, ok := r.operations[name]; ok </span><span class="cov8" title="1">{
+                return op, nil
+        }</span>
+
+        <span class="cov8" title="1">return nil, &amp;errors.CalculatorError{
+                Op:      name,
+                Err:     "operation not found",
+                Details: fmt.Sprintf("available operations: %v", r.List()),
+        }</span>
+}
+
+// List returns all registered operation names, sorted alphabetically
+func (r *Registry) List() []string <span class="cov8" title="1">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        names := make([]string, 0, len(r.operations))
+        for name := range r.operations </span><span class="cov8" title="1">{
+                names = append(names, name)
+        }</span>
+        <span class="cov8" title="1">sort.Strings(names)
+        return names</span>
+}
+
+// Count returns the number of registered operations
+func (r *Registry) Count() int <span class="cov8" title="1">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+        return len(r.operations)
+}</span>
+
+// Unregister removes an operation from the registry
+func (r *Registry) Unregister(name string) bool <span class="cov8" title="1">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        if _, exists := r.operations[name]; exists </span><span class="cov8" title="1">{
+                delete(r.operations, name)
+                return true
+        }</span>
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package operations
+
+// SubtractOperation implements the Operation interface for subtraction
+type SubtractOperation struct{}
+
+// init registers the SubtractOperation with the DefaultRegistry
+func init() <span class="cov8" title="1">{
+        RegisterDefault(&amp;SubtractOperation{})
+}</span>
+
+// Execute subtracts the second number from the first
+// Returns an error if either input is NaN or infinite
+func (s *SubtractOperation) Execute(x, y float64) (float64, error) <span class="cov8" title="1">{
+        if err := validateInputs(x, y); err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+        <span class="cov8" title="1">return x - y, nil</span>
+}
+
+// Name returns the operation identifier
+func (s *SubtractOperation) Name() string <span class="cov8" title="1">{
+        return "subtract"
+}</span>
+
+// Description returns a human-readable description
+func (s *SubtractOperation) Description() string <span class="cov8" title="1">{
+        return "Subtracts the second number from the first"
+}</span>
+
+// Symbol returns the mathematical symbol
+func (s *SubtractOperation) Symbol() string <span class="cov8" title="1">{
+        return "-"
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package operations
+
+import (
+        "math"
+
+        "github.com/kairostack/go-calculator/internal/errors"
+)
+
+// validateInputs checks that both inputs are valid finite numbers.
+// Returns specific error types for NaN and infinite values.
+func validateInputs(a, b float64) error <span class="cov8" title="1">{
+        if math.IsNaN(a) || math.IsNaN(b) </span><span class="cov8" title="1">{
+                return errors.ErrInputNaN
+        }</span>
+        <span class="cov8" title="1">if math.IsInf(a, 0) || math.IsInf(b, 0) </span><span class="cov8" title="1">{
+                return errors.ErrInputInf
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package cli
+
+import (
+        "fmt"
+        "strings"
+)
+
+// Formatter handles output formatting for calculator results
+type Formatter struct {
+        precision int
+}
+
+// NewFormatter creates a new result formatter
+// Default precision is 10 decimal places
+func NewFormatter() *Formatter <span class="cov8" title="1">{
+        return &amp;Formatter{precision: 10}
+}</span>
+
+// NewFormatterWithPrecision creates a formatter with custom decimal precision
+func NewFormatterWithPrecision(precision int) *Formatter <span class="cov8" title="1">{
+        if precision &lt; 0 </span><span class="cov8" title="1">{
+                precision = 10
+        }</span>
+        <span class="cov8" title="1">return &amp;Formatter{precision: precision}</span>
+}
+
+// FormatResult formats a calculation result for display
+func (f *Formatter) FormatResult(operation, symbol string, a, b, result float64) string <span class="cov8" title="1">{
+        return fmt.Sprintf("%g %s %g = %s", a, symbol, b, f.formatNumber(result))
+}</span>
+
+// FormatError formats an error message for display
+func (f *Formatter) FormatError(err error) string <span class="cov8" title="1">{
+        return fmt.Sprintf("Error: %s", err.Error())
+}</span>
+
+// FormatHelp generates a help message with available operations
+func (f *Formatter) FormatHelp(operations []string) string <span class="cov8" title="1">{
+        var sb strings.Builder
+        sb.WriteString("Usage: calculator &lt;operation&gt; &lt;number1&gt; &lt;number2&gt;\n\n")
+        sb.WriteString("Available operations:\n")
+
+        for _, op := range operations </span><span class="cov8" title="1">{
+                sb.WriteString(fmt.Sprintf("  - %s\n", op))
+        }</span>
+
+        <span class="cov8" title="1">sb.WriteString("\nExamples:\n")
+        sb.WriteString("  calculator add 5 3       # Result: 8\n")
+        sb.WriteString("  calculator subtract 10 4 # Result: 6\n")
+        sb.WriteString("  calculator multiply 6 7  # Result: 42\n")
+        sb.WriteString("  calculator divide 15 3   # Result: 5\n")
+
+        return sb.String()</span>
+}
+
+// formatNumber formats a float64 for display, removing trailing zeros
+func (f *Formatter) formatNumber(n float64) string <span class="cov8" title="1">{
+        format := fmt.Sprintf("%%.%df", f.precision)
+        s := fmt.Sprintf(format, n)
+
+        // Remove trailing zeros
+        s = strings.TrimRight(s, "0")
+        s = strings.TrimRight(s, ".")
+
+        return s
+}</span>
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package cli
+
+import (
+        "fmt"
+        "math"
+        "strconv"
+        "strings"
+
+        "github.com/kairostack/go-calculator/internal/errors"
+)
+
+// Version is the current version of the calculator CLI
+const Version = "1.0.0"
+
+// ParseResult holds the parsed command-line arguments
+type ParseResult struct {
+        Operation string
+        OperandA  float64
+        OperandB  float64
+}
+
+// Parser handles command-line argument parsing
+type Parser struct{}
+
+// NewParser creates a new argument parser
+func NewParser() *Parser <span class="cov8" title="1">{
+        return &amp;Parser{}
+}</span>
+
+// Parse converts command-line arguments into a structured result
+// Expected format: [operation] [number1] [number2]
+// Example: add 5 3
+func (p *Parser) Parse(args []string) (*ParseResult, error) <span class="cov8" title="1">{
+        if len(args) &lt; 3 </span><span class="cov8" title="1">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:      "parse",
+                        Err:     "insufficient arguments",
+                        Details: fmt.Sprintf("expected: &lt;operation&gt; &lt;number1&gt; &lt;number2&gt;, got %d arguments", len(args)),
+                }
+        }</span>
+
+        <span class="cov8" title="1">operation := strings.ToLower(strings.TrimSpace(args[0]))
+        if operation == "" </span><span class="cov8" title="1">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:  "parse",
+                        Err: "operation cannot be empty",
+                }
+        }</span>
+
+        <span class="cov8" title="1">a, err := strconv.ParseFloat(strings.TrimSpace(args[1]), 64)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:      "parse",
+                        Err:     "invalid first operand",
+                        Details: fmt.Sprintf("'%s' is not a valid number", args[1]),
+                }
+        }</span>
+
+        <span class="cov8" title="1">if !isValidNumber(a) </span><span class="cov0" title="0">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:      "parse",
+                        Err:     "invalid first operand",
+                        Details: fmt.Sprintf("'%s' is not a valid finite number", args[1]),
+                }
+        }</span>
+
+        <span class="cov8" title="1">b, err := strconv.ParseFloat(strings.TrimSpace(args[2]), 64)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:      "parse",
+                        Err:     "invalid second operand",
+                        Details: fmt.Sprintf("'%s' is not a valid number", args[2]),
+                }
+        }</span>
+
+        <span class="cov8" title="1">if !isValidNumber(b) </span><span class="cov0" title="0">{
+                return nil, &amp;errors.CalculatorError{
+                        Op:      "parse",
+                        Err:     "invalid second operand",
+                        Details: fmt.Sprintf("'%s' is not a valid finite number", args[2]),
+                }
+        }</span>
+
+        <span class="cov8" title="1">return &amp;ParseResult{
+                Operation: operation,
+                OperandA:  a,
+                OperandB:  b,
+        }, nil</span>
+}
+
+// isValidNumber checks if the parsed float is a finite number (not NaN or +/- Inf).
+// This prevents silent failures from special floating-point values.
+func isValidNumber(n float64) bool <span class="cov8" title="1">{
+        return !math.IsNaN(n) &amp;&amp; !math.IsInf(n, 0)
+}</span>
+
+// ParseResultString returns a formatted string representation of the parse result
+func (pr *ParseResult) String() string <span class="cov8" title="1">{
+        return fmt.Sprintf("Operation: %s, A: %g, B: %g", pr.Operation, pr.OperandA, pr.OperandB)
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package cli
+
+import (
+        "fmt"
+        "io"
+
+        "github.com/kairostack/go-calculator/internal/calculator"
+)
+
+// Runner orchestrates CLI execution with I/O abstraction for testability
+type Runner struct {
+        calculator *calculator.Calculator
+        formatter  *Formatter
+        parser     *Parser
+        stdin      io.Reader
+        stdout     io.Writer
+        stderr     io.Writer
+}
+
+// NewRunner creates a new CLI runner with the given dependencies
+func NewRunner(calc *calculator.Calculator, stdin io.Reader, stdout, stderr io.Writer) *Runner <span class="cov0" title="0">{
+        return &amp;Runner{
+                calculator: calc,
+                formatter:  NewFormatter(),
+                parser:     NewParser(),
+                stdin:      stdin,
+                stdout:     stdout,
+                stderr:     stderr,
+        }
+}</span>
+
+// Run executes the calculator with the provided arguments
+// Returns exit code: 0 for success, 1 for error
+func (r *Runner) Run(args []string) int <span class="cov0" title="0">{
+        // Handle help flag
+        if len(args) &gt; 1 &amp;&amp; (args[1] == "--help" || args[1] == "-h" || args[1] == "help") </span><span class="cov0" title="0">{
+                fmt.Fprint(r.stdout, r.formatter.FormatHelp(r.calculator.ListOperations()))
+                return 0
+        }</span>
+
+        // Handle version flag
+        <span class="cov0" title="0">if len(args) &gt; 1 &amp;&amp; (args[1] == "--version" || args[1] == "-v") </span><span class="cov0" title="0">{
+                fmt.Fprintf(r.stdout, "calculator version %s\n", Version)
+                return 0
+        }</span>
+
+        // Show help if no arguments (just program name)
+        <span class="cov0" title="0">if len(args) &lt;= 1 </span><span class="cov0" title="0">{
+                fmt.Fprint(r.stdout, r.formatter.FormatHelp(r.calculator.ListOperations()))
+                return 0
+        }</span>
+
+        // Parse arguments (skip program name at args[0])
+        <span class="cov0" title="0">parseResult, err := r.parser.Parse(args[1:])
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Fprintln(r.stderr, r.formatter.FormatError(err))
+                return 1
+        }</span>
+
+        // Execute calculation
+        <span class="cov0" title="0">result, symbol, err := r.calculator.ExecuteOperation(
+                parseResult.Operation,
+                parseResult.OperandA,
+                parseResult.OperandB,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Fprintln(r.stderr, r.formatter.FormatError(err))
+                return 1
+        }</span>
+
+        // Format and print result
+        <span class="cov0" title="0">output := r.formatter.FormatResult(
+                parseResult.Operation,
+                symbol,
+                parseResult.OperandA,
+                parseResult.OperandB,
+                result,
+        )
+        fmt.Fprintln(r.stdout, output)
+
+        return 0</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">// Package floatutil provides utilities for safe floating-point comparisons.
+// Float comparisons must use tolerance because direct equality checks fail
+// due to IEEE 754 representation limitations (e.g., 0.1 + 0.2 != 0.3).
+package floatutil
+
+import "math"
+
+// Epsilon is the default tolerance for float comparisons.
+// 1e-9 provides precision suitable for typical calculator operations
+// while accounting for floating-point arithmetic errors.
+const Epsilon = 1e-9
+
+// Equals compares two float64 values for equality within a tolerance.
+// It handles special cases including NaN, infinities, and very large numbers.
+//
+// The comparison uses both absolute and relative error to ensure
+// accuracy across different magnitude ranges:
+//   - For small numbers (&lt; 1e9), absolute error is sufficient
+//   - For large numbers, relative error prevents false negatives
+//
+// NaN values are never considered equal, even to other NaN values.
+// Positive and negative infinities are equal only to themselves.
+func Equals(a, b float64) bool <span class="cov8" title="1">{
+        // NaN is never equal to anything, including itself
+        if math.IsNaN(a) || math.IsNaN(b) </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        // Handle infinities: they must be exactly equal
+        // (both +Inf or both -Inf)
+        <span class="cov8" title="1">if math.IsInf(a, 0) || math.IsInf(b, 0) </span><span class="cov8" title="1">{
+                return a == b
+        }</span>
+
+        // Calculate absolute difference
+        <span class="cov8" title="1">diff := math.Abs(a - b)
+
+        // Use absolute error check for small differences
+        if diff &lt;= Epsilon </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // For large numbers, use relative error to avoid precision issues
+        // This ensures 1e20 and (1e20 + 1) compare correctly
+        <span class="cov8" title="1">return diff &lt;= Epsilon*math.Max(math.Abs(a), math.Abs(b))</span>
+}
+
+// EqualsWithTolerance compares two float64 values with a custom epsilon.
+// Use this when the default Epsilon is not appropriate for your use case.
+func EqualsWithTolerance(a, b, epsilon float64) bool <span class="cov8" title="1">{
+        if math.IsNaN(a) || math.IsNaN(b) </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        <span class="cov8" title="1">diff := math.Abs(a - b)
+        if diff &lt;= epsilon </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return diff &lt;= epsilon*math.Max(math.Abs(a), math.Abs(b))</span>
+}
+
+// IsZero checks if a float64 value is effectively zero within epsilon.
+func IsZero(a float64) bool <span class="cov8" title="1">{
+        return math.Abs(a) &lt;= Epsilon
+}</span>
+
+// GreaterThan checks if a &gt; b within epsilon tolerance.
+// Returns false if values are effectively equal.
+func GreaterThan(a, b float64) bool <span class="cov8" title="1">{
+        return a &gt; b &amp;&amp; !Equals(a, b)
+}</span>
+
+// LessThan checks if a &lt; b within epsilon tolerance.
+// Returns false if values are effectively equal.
+func LessThan(a, b float64) bool <span class="cov8" title="1">{
+        return a &lt; b &amp;&amp; !Equals(a, b)
+}</span>
+
+// IsFinite returns true if the value is neither NaN nor +/- Inf.
+func IsFinite(a float64) bool <span class="cov8" title="1">{
+        return !math.IsNaN(a) &amp;&amp; !math.IsInf(a, 0)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

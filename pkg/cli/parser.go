@@ -9,6 +9,9 @@ import (
 	"github.com/kairostack/go-calculator/internal/errors"
 )
 
+// Version is the current version of the calculator CLI
+const Version = "1.0.0"
+
 // ParseResult holds the parsed command-line arguments
 type ParseResult struct {
 	Operation string

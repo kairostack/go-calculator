@@ -84,6 +84,36 @@ func TestDivideOperation_Execute_EdgeCases(t *testing.T) {
 	}
 }
 
+func TestDivideOperation_Execute_OverflowUnderflow(t *testing.T) {
+	div := &DivideOperation{}
+
+	tests := []struct {
+		name    string
+		x, y    float64
+		wantErr bool
+	}{
+		{"overflow: MaxFloat64 / small", math.MaxFloat64, math.SmallestNonzeroFloat64, true},
+		{"underflow: small / MaxFloat64", math.SmallestNonzeroFloat64, math.MaxFloat64, true},
+		{"valid division", 10, 2, false},
+		{"zero dividend", 0, 5, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := div.Execute(tt.x, tt.y)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("expected error, got result %g", result)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestDivideOperation_Name(t *testing.T) {
 	div := &DivideOperation{}
 	if got := div.Name(); got != "divide" {

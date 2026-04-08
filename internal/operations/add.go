@@ -1,5 +1,10 @@
 package operations
 
+import (
+	"errors"
+	"math"
+)
+
 // AddOperation implements the Operation interface for addition
 type AddOperation struct{}
 
@@ -9,12 +14,18 @@ func init() {
 }
 
 // Execute adds two numbers together
-// Returns an error if either input is NaN or infinite
+// Returns an error if either input is NaN or infinite, or if overflow occurs
 func (a *AddOperation) Execute(x, y float64) (float64, error) {
 	if err := validateInputs(x, y); err != nil {
 		return 0, err
 	}
-	return x + y, nil
+
+	result := x + y
+	if math.IsInf(result, 0) {
+		return 0, errors.New("addition resulted in infinity")
+	}
+
+	return result, nil
 }
 
 // Name returns the operation identifier

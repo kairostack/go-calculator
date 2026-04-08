@@ -80,3 +80,20 @@ func Wrap(op string, err error) *CalculatorError {
 		Details: "wrapped error",
 	}
 }
+
+// OperationError provides detailed context for operation failures
+type OperationError struct {
+	Op   string
+	A, B float64
+	Err  error
+}
+
+// Error implements the error interface with context
+func (e *OperationError) Error() string {
+	return fmt.Sprintf("operation %s(%g, %g) failed: %v", e.Op, e.A, e.B, e.Err)
+}
+
+// Unwrap allows error inspection with errors.Is and errors.As
+func (e *OperationError) Unwrap() error {
+	return e.Err
+}

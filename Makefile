@@ -1,4 +1,4 @@
-.PHONY: all build test coverage clean install lint run help
+.PHONY: all build test coverage clean install lint run help bench bench-operations fuzz fuzz-parser fuzz-operations
 
 # Variables
 BINARY_NAME=calculator
@@ -128,3 +128,29 @@ dev-multiply: build
 
 dev-divide: build
 	$(BUILD_DIR)/$(BINARY_NAME) divide 10 5
+
+## Run all benchmarks
+bench:
+	@echo "Running benchmarks..."
+	go test -bench=. -benchmem ./...
+
+## Run operation benchmarks only
+bench-operations:
+	@echo "Running operation benchmarks..."
+	go test -bench=. -benchmem ./internal/operations/...
+
+## Run all fuzz tests (30s each)
+fuzz:
+	@echo "Running fuzz tests (30s each)..."
+	go test -fuzz=Fuzz -fuzztime=30s ./pkg/cli/... || true
+	go test -fuzz=Fuzz -fuzztime=30s ./internal/operations/... || true
+
+## Fuzz parser (60s)
+fuzz-parser:
+	@echo "Fuzzing parser (60s)..."
+	go test -fuzz=FuzzParseArgs -fuzztime=60s ./pkg/cli/...
+
+## Fuzz operations (60s)
+fuzz-operations:
+	@echo "Fuzzing operations (60s)..."
+	go test -fuzz=Fuzz -fuzztime=60s ./internal/operations/...
