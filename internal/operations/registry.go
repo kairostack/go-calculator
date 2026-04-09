@@ -8,20 +8,14 @@ import (
 	"github.com/kairostack/go-calculator/internal/errors"
 )
 
-var (
-	// DefaultRegistry is the global default registry that is pre-populated
-	// via init() functions in each operation file
-	DefaultRegistry = NewRegistry()
-	registerOnce    sync.Once
-)
+// DefaultRegistry is the global default registry that is pre-populated
+// via init() functions in each operation file
+var DefaultRegistry = NewRegistry()
 
 // RegisterDefault registers an operation to the DefaultRegistry.
 // This is called from init() functions in each operation file.
 // Thread-safe and idempotent.
 func RegisterDefault(op Operation) {
-	registerOnce.Do(func() {
-		DefaultRegistry = NewRegistry()
-	})
 	DefaultRegistry.Register(op)
 }
 

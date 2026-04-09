@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/kairostack/go-calculator/internal/errors"
 )
@@ -44,6 +45,15 @@ func (p *Parser) Parse(args []string) (*ParseResult, error) {
 		return nil, &errors.CalculatorError{
 			Op:  "parse",
 			Err: "operation cannot be empty",
+		}
+	}
+
+	// Validate operation for non-printable characters
+	if containsNonPrintable(operation) {
+		return nil, &errors.CalculatorError{
+			Op:      "parse",
+			Err:     "invalid operation",
+			Details: "operation contains non-printable characters",
 		}
 	}
 
@@ -92,6 +102,18 @@ func (p *Parser) Parse(args []string) (*ParseResult, error) {
 // This prevents silent failures from special floating-point values.
 func isValidNumber(n float64) bool {
 	return !math.IsNaN(n) && !math.IsInf(n, 0)
+}
+
+// containsNonPrintable checks if a string contains non-printable characters.
+// This helps detect invalid input that may contain control characters or other
+// non-visible characters that could cause unexpected behavior.
+func containsNonPrintable(s string) bool {
+	for _, r := range s {
+		if !unicode.IsPrint(r) && !unicode.IsSpace(r) {
+			return true
+		}
+	}
+	return false
 }
 
 // ParseResultString returns a formatted string representation of the parse result

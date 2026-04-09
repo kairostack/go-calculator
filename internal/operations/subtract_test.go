@@ -67,6 +67,36 @@ func TestSubtractOperation_Execute_InvalidInputs(t *testing.T) {
 	}
 }
 
+func TestSubtractOperation_Execute_Overflow(t *testing.T) {
+	sub := &SubtractOperation{}
+
+	tests := []struct {
+		name    string
+		a, b    float64
+		wantErr bool
+	}{
+		{"MaxFloat64 - (-MaxFloat64)", math.MaxFloat64, -math.MaxFloat64, true},
+		{"(-MaxFloat64) - MaxFloat64", -math.MaxFloat64, math.MaxFloat64, true},
+		{"valid large", math.MaxFloat64 / 2, -math.MaxFloat64 / 4, false},
+		{"valid subtraction", 1e200, -1e200, false}, // 2e200 is still finite
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := sub.Execute(tt.a, tt.b)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("expected overflow error, got result %g", result)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestSubtractOperation_Name(t *testing.T) {
 	sub := &SubtractOperation{}
 	if got := sub.Name(); got != "subtract" {

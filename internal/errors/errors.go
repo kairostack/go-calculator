@@ -1,3 +1,29 @@
+// Package errors provides custom error types for the calculator application.
+//
+// The errors package defines CalculatorError and OperationError types
+// that provide rich error context including operation names, details,
+// and support for error wrapping and unwrapping.
+//
+// Basic usage:
+//
+//	err := &CalculatorError{
+//	    Op:  "divide",
+//	    Err: "division by zero",
+//	}
+//
+// Error wrapping:
+//
+//	err := errors.New("database connection failed")
+//	calcErr := Wrap("add", err)
+//	if errors.Is(calcErr, err) {
+//	    // handle wrapped error
+//	}
+//
+// Predefined errors:
+//
+//	err := ErrDivisionByZero
+//	err := ErrInvalidOperation
+//	...
 package errors
 
 import (

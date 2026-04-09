@@ -1,5 +1,11 @@
 package operations
 
+import (
+	"math"
+
+	"github.com/kairostack/go-calculator/internal/errors"
+)
+
 // SubtractOperation implements the Operation interface for subtraction
 type SubtractOperation struct{}
 
@@ -9,12 +15,22 @@ func init() {
 }
 
 // Execute subtracts the second number from the first
-// Returns an error if either input is NaN or infinite
+// Returns an error if either input is NaN or infinite, or if overflow occurs
 func (s *SubtractOperation) Execute(x, y float64) (float64, error) {
 	if err := validateInputs(x, y); err != nil {
 		return 0, err
 	}
-	return x - y, nil
+
+	result := x - y
+	if math.IsInf(result, 0) {
+		return 0, &errors.CalculatorError{
+			Op:      "subtract",
+			Err:     "subtraction resulted in infinity",
+			Details: "overflow detected",
+		}
+	}
+
+	return result, nil
 }
 
 // Name returns the operation identifier

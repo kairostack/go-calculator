@@ -1,10 +1,9 @@
 package operations
 
 import (
-	"errors"
 	"math"
 
-	calcErrors "github.com/kairostack/go-calculator/internal/errors"
+	"github.com/kairostack/go-calculator/internal/errors"
 )
 
 // DivideOperation implements the Operation interface for division
@@ -26,16 +25,24 @@ func (d *DivideOperation) Execute(x, y float64) (float64, error) {
 
 	// Check for division by zero or invalid divisor values
 	if y == 0 || math.IsNaN(y) || math.IsInf(y, 0) {
-		return 0, calcErrors.ErrDivisionByZero
+		return 0, errors.ErrDivisionByZero
 	}
 
 	result := x / y
 	// Check for underflow: when a non-zero number divided by a large number produces zero
 	if x != 0 && result == 0 && math.Abs(y) > 1 {
-		return 0, errors.New("division underflow - result too small")
+		return 0, &errors.CalculatorError{
+			Op:      "divide",
+			Err:     "division underflow",
+			Details: "result too small",
+		}
 	}
 	if math.IsInf(result, 0) {
-		return 0, errors.New("division overflow - result too large")
+		return 0, &errors.CalculatorError{
+			Op:      "divide",
+			Err:     "division overflow",
+			Details: "result too large",
+		}
 	}
 
 	return result, nil

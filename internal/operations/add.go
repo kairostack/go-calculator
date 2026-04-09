@@ -1,8 +1,9 @@
 package operations
 
 import (
-	"errors"
 	"math"
+
+	"github.com/kairostack/go-calculator/internal/errors"
 )
 
 // AddOperation implements the Operation interface for addition
@@ -22,7 +23,11 @@ func (a *AddOperation) Execute(x, y float64) (float64, error) {
 
 	result := x + y
 	if math.IsInf(result, 0) {
-		return 0, errors.New("addition resulted in infinity")
+		return 0, &errors.CalculatorError{
+			Op:      "add",
+			Err:     "addition resulted in infinity",
+			Details: "overflow detected",
+		}
 	}
 
 	return result, nil

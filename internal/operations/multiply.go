@@ -1,8 +1,9 @@
 package operations
 
 import (
-	"errors"
 	"math"
+
+	"github.com/kairostack/go-calculator/internal/errors"
 )
 
 // MultiplyOperation implements the Operation interface for multiplication
@@ -22,12 +23,20 @@ func (m *MultiplyOperation) Execute(x, y float64) (float64, error) {
 
 	// Check for potential overflow
 	if math.Abs(x) > 1 && math.Abs(y) > math.MaxFloat64/math.Abs(x) {
-		return 0, errors.New("multiplication would overflow")
+		return 0, &errors.CalculatorError{
+			Op:      "multiply",
+			Err:     "multiplication would overflow",
+			Details: "operands too large",
+		}
 	}
 
 	result := x * y
 	if math.IsInf(result, 0) {
-		return 0, errors.New("multiplication resulted in infinity")
+		return 0, &errors.CalculatorError{
+			Op:      "multiply",
+			Err:     "multiplication resulted in infinity",
+			Details: "overflow detected",
+		}
 	}
 
 	return result, nil
